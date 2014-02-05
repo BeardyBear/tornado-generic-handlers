@@ -1,0 +1,100 @@
+from .base import *
+
+class FormMixin(ContextMixin):
+    """
+    A mixin that provides a way to show and handle a form in a request.
+    """
+
+    initial = {}
+    form_class = None
+    success_url = None
+
+    def get_initial(self):
+        """
+        Returns the initial data to use for forms on this view.
+        """
+        return self.initial.copy()
+
+    def get_form_class(self):
+        """
+        Returns the form class to use in this view
+        """
+        return self.form_class
+
+    def get_form(self, form_class):
+        """
+        Returns an instance of the form to be used in this view.
+        """
+        return form_class(**self.get_form_kwargs())
+
+    def get_form_kwargs(self):
+        """
+        Returns the keyword arguments for instantiating the form.
+        """
+        kwargs = {
+            'initial': self.get_initial(),
+        }
+
+        kwargs.update(self.request.arguments)   
+        return kwargs
+
+    def get_success_url(self):
+        """
+        Returns the supplied success URL.
+        """
+        if not self.success_url:
+            raise AttributeError("No URL to redirect to. Provide a success_url.")
+        return self.success_url
+
+    def form_valid(self, form):
+        """
+        If the form is valid, redirect to the supplied URL.
+        """
+        return self.redirect(self.get_success_url())
+
+    def form_invalid(self, form):
+        """
+        If the form is invalid, re-render the context data with the
+        data-filled form and errors.
+        """
+        return self.render(self.get_context_data(form=form))
+        
+class ProcessFormHandler(GenericHandler):
+    """
+    A mixin that renders a form on GET and processes it on POST.
+    """
+    def get(self, *args, **kwargs):
+        """
+        Handles GET requests and instantiates a blank version of the form.
+        """
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        return self.render(self.get_context_data(form=form))
+
+    def post(self, *args, **kwargs):
+        """
+        Handles POST requests, instantiating a form instance with the passed
+        POST variables and then checked for validity.
+        """
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.validate():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    # PUT is a valid HTTP verb for creating (with a known URL) or editing an
+    # object, note that browsers only support POST for now.
+    def put(self, *args, **kwargs):
+        return self.post(*args, **kwargs)
+        
+class BaseFormHandler(FormMixin, ProcessFormHandler):
+    """
+    A base view for displaying a form
+    """
+
+
+class FormHandler(TemplateResponseMixin, BaseFormHandler):
+    """
+    A view for displaying a form, and rendering a template response.
+    """
