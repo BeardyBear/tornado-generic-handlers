@@ -35,7 +35,8 @@ class FormMixin(ContextMixin):
             'initial': self.get_initial(),
         }
 
-        kwargs.update(self.request.arguments)   
+        arguments = {k:v[0] for k, v in self.request.arguments.iteritems()}
+        kwargs.update(arguments)   
         return kwargs
 
     def get_success_url(self):

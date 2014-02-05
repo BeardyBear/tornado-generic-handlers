@@ -10,7 +10,9 @@ class ContextMixin(object):
         return kwargs
         
 class GenericHandler(tornado.web.RequestHandler):
-    pass
+    @property
+    def db(self):
+        return self.application.db
     
 class TemplateResponseMixin(object):
     """
