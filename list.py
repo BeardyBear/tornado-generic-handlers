@@ -1,4 +1,5 @@
 from .base import *
+from .pagination import Paginator
 
 class MultipleObjectMixin(ContextMixin):
     """
