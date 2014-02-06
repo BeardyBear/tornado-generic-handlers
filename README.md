@@ -52,6 +52,7 @@ class LoginHandler(FormHandler):
 <h2>More on handlers</h2>
 <p>You'd like to override handlers methods to customize their behaviour. </p>
 <h3>FormHandler</h3>
+<p>A handler that displays a form. On error, redisplays the form with validation errors; on success, redirects to a new URL.</p>
 ```python
 class CreatePostHandler(FormHandler):
     template_name = 'create_post.html'
@@ -90,7 +91,67 @@ class CreatePostHandler(FormHandler):
         
     def get_success_url(self):
         """
-        Return success_url attribute by default.
+        Returns success_url attribute by default.
         """
         return self.reverse_url('post', self.post_id)
+        
+    def get_form_kwargs(self):
+        """
+        Returns kwargs that will be passed to your form's constructor.
+        """
+        kwargs = super(CreatePostHandler, self).get_form_kwargs()
+        kwargs['variable'] = 'some variable to be here'
+        return kwargs
+```
+<h3>DetailHandler</h3>
+<p>While this handler is executing, self.object will contain the object that the handler is operating upon.</p>
+```python
+class PostDetailHandler(DetailHandler):
+    """
+    Displays the object with provided id.
+    """
+    template_name = 'post.html'
+    model = Post
+    #name by which the object will be accessible in template
+    context_object_name = 'post' 
+
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            url(r'/post/(?P<id>\d+)/', PostDetailHandler, name='post_detail'),
+        ]
+```
+```python
+class PostDetailHandler(DetailHandler):
+    """
+    The same, but with modified url kwarg name.
+    """
+    template_name = 'post.html'
+    model = Post
+    context_object_name = 'post' 
+    pk_url_kwarg = 'super_id'
+
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            url(r'/post/(?P<super_id>\d+)/', PostDetailHandler, name='post_detail'),
+        ]
+```
+```python
+class PostDetailHandler(DetailHandler):
+    """
+    Displays the object by its slug.
+    Surely, the slug field doesn't need to be a slug really.
+    """
+    template_name = 'post.html'
+    model = Post
+    context_object_name = 'post' 
+    slug_url_kwarg = 'mega_slug' #defaults to slug
+    slug_field = Post.slug_field_name
+
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            url(r'/post/(?P<mega_slug>[-_\w]+)/', PostDetailHandler, name='post_detail'),
+        ]
 ```
