@@ -133,7 +133,7 @@ class BaseListHandler(MultipleObjectMixin, GenericHandler):
     A base view for displaying a list of objects.
     """
     def get(self, *args, **kwargs):
-        super(BaseListHandler, self).get(BaseListHandler)
+        super(BaseListHandler, self).get(*args, **kwargs)
         self.object_list = self.get_queryset()
         allow_empty = self.get_allow_empty()
 
@@ -150,7 +150,7 @@ class BaseListHandler(MultipleObjectMixin, GenericHandler):
                 raise AttributeError(_("Empty list and '%(class_name)s.allow_empty' is False.")
                         % {'class_name': self.__class__.__name__})
         context = self.get_context_data()
-        return self.write(context)
+        return self.render(context)
         
 class ListHandler(TemplateResponseMixin, BaseListHandler):
     """

@@ -1,5 +1,6 @@
 from sqlalchemy.orm.exc import NoResultFound 
 from .exceptions import ImproperlyConfigured
+from .base import GenericHandler, TemplateResponseMixin
 
 class SingleObjectMixin(ContextMixin):
     """
@@ -96,3 +97,21 @@ class SingleObjectMixin(ContextMixin):
                 context[context_object_name] = self.object
         context.update(kwargs)
         return super(SingleObjectMixin, self).get_context_data(**context)
+        
+class BaseDetailHandler(SingleObjectMixin, GenericHandler):
+    """
+    A base view for displaying a single object
+    """
+    def get(self, *args, **kwargs):
+        super(BaseDetailHandler, self).get(*args, **kwargs)
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render(context)
+        
+class DetailHandler(TemplateResponseMixin, BaseDetailHandler):
+    """
+    Render a "detail" view of an object.
+
+    By default this is a model instance looked up from `self.queryset`, but the
+    view will support display of *any* object by overriding `self.get_object()`.
+    """
