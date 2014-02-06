@@ -31,10 +31,8 @@ class FormMixin(ContextMixin):
         """
         Returns the keyword arguments for instantiating the form.
         """
-        kwargs = {
-            'initial': self.get_initial(),
-        }
-
+        kwargs = {}       
+        kwargs.update(self.get_initial())        
         arguments = {k:v[0] for k, v in self.request.arguments.iteritems()}
         kwargs.update(arguments)   
         return kwargs

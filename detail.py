@@ -1,6 +1,8 @@
+from sqlalchemy.orm.exc import NoResultFound 
+from .exceptions import ImproperlyConfigured
+
 class SingleObjectMixin(ContextMixin):
     """
-    ПЕРЕПИСАТЬ ПОД SQLALCHEMY
     Provides the ability to retrieve a single object for further manipulation.
     """
     model = None
@@ -8,7 +10,7 @@ class SingleObjectMixin(ContextMixin):
     slug_field = 'slug'
     context_object_name = None
     slug_url_kwarg = 'slug'
-    pk_url_kwarg = 'pk'
+    pk_url_kwarg = 'id'
 
     def get_object(self, queryset=None):
         """
@@ -26,12 +28,12 @@ class SingleObjectMixin(ContextMixin):
         pk = self.kwargs.get(self.pk_url_kwarg, None)
         slug = self.kwargs.get(self.slug_url_kwarg, None)
         if pk is not None:
-            queryset = queryset.filter(pk=pk)
+            queryset = queryset.filter(self.model.id == pk)
 
         # Next, try looking up by slug.
         elif slug is not None:
             slug_field = self.get_slug_field()
-            queryset = queryset.filter(**{slug_field: slug})
+            queryset = queryset.filter(self.model.slug == slug})
 
         # If none of those are defined, it's an error.
         else:
@@ -41,10 +43,10 @@ class SingleObjectMixin(ContextMixin):
 
         try:
             # Get the single item from the filtered queryset
-            obj = queryset.get()
-        except queryset.model.DoesNotExist:
-            raise Http404(_("No %(verbose_name)s found matching the query") %
-                          {'verbose_name': queryset.model._meta.verbose_name})
+            obj = queryset.one()
+        except NoResultFound:
+            raise ValueError("No %(verbose_name)s found matching the query" %
+                          {'verbose_name': str(self.model)})
         return obj
 
     def get_queryset(self):
@@ -56,7 +58,7 @@ class SingleObjectMixin(ContextMixin):
         """
         if self.queryset is None:
             if self.model:
-                return self.model._default_manager.all()
+                return self.model.query.all()
             else:
                 raise ImproperlyConfigured(
                     "%(cls)s is missing a QuerySet. Define "
@@ -79,8 +81,6 @@ class SingleObjectMixin(ContextMixin):
         """
         if self.context_object_name:
             return self.context_object_name
-        elif isinstance(obj, models.Model):
-            return obj._meta.model_name
         else:
             return None
 

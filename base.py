@@ -10,9 +10,13 @@ class ContextMixin(object):
         return kwargs
         
 class GenericHandler(tornado.web.RequestHandler):
-    @property
-    def db(self):
-        return self.application.db
+    def get(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        
+    def post(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
     
 class TemplateResponseMixin(object):
     """
@@ -29,6 +33,7 @@ class TemplateHandler(TemplateResponseMixin, ContextMixin, GenericHandler):
     any keyword arguments passed by the url conf.
     """
     def get(self, *args, **kwargs):
+        super(TemplateHandler, self).get(*args, **kwargs)
         context = self.get_context_data(**kwargs)
         return self.render(context)
         

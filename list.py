@@ -1,5 +1,6 @@
 from .base import *
 from .pagination import Paginator
+from .exceptions import ImproperlyConfigured
 
 class MultipleObjectMixin(ContextMixin):
     """
@@ -24,9 +25,9 @@ class MultipleObjectMixin(ContextMixin):
         if self.queryset is not None:
             queryset = self.queryset.all()
         elif self.model is not None:
-            queryset = self.db.query(self.model).all()
+            queryset = self.model.query.all()
         else:
-            raise AttributeError(
+            raise ImproperlyConfigured(
                 "%(cls)s is missing a QuerySet. Define "
                 "%(cls)s.model, %(cls)s.queryset, or override "
                 "%(cls)s.get_queryset()." % {
@@ -43,7 +44,7 @@ class MultipleObjectMixin(ContextMixin):
             queryset, page_size, orphans=self.get_paginate_orphans(),
             allow_empty_first_page=self.get_allow_empty())
         page_kwarg = self.page_kwarg
-        page = self.get_argument(page_kwarg) or 1
+        page = self.kwargs.get(page_kwarg, 1)
         try:
             page_number = int(page)
         except ValueError:
@@ -132,6 +133,7 @@ class BaseListHandler(MultipleObjectMixin, GenericHandler):
     A base view for displaying a list of objects.
     """
     def get(self, *args, **kwargs):
+        super(BaseListHandler, self).get(BaseListHandler)
         self.object_list = self.get_queryset()
         allow_empty = self.get_allow_empty()
 
