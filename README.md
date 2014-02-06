@@ -13,8 +13,14 @@ pip install torgen
 ```
 <h2>Configuration</h2>
 ```python
+#app.py
+from sqlalchemy.orm import scoped_session, sessionmaker
+
+class Application(tornado.web.Application):
+    def __init__(self):
+        self.db = scoped_session(sessionmaker(bind=engine))
 ```
-<h2>Usage</h2>
+<h2>Basic usage</h2>
 ```python
 from torgen.base import TemplateHandler
 from torgen.list import ListHandler
@@ -37,11 +43,28 @@ class PostHandler(DetailHandler):
 class LoginHandler(FormHandler):
     template_name = 'login.html'
     form_class = LoginForm
+    success_url = '/'
     
     def form_valid(self, form):
         self.set_secure_cookie('user', form.data['username'])
         return super(LoginHandler, self).form_valid(form)
+```
+<h2>More on handlers</h2>
+<p>You'd like to override handlers methods to customize their behaviour. </p>
+<h3>FormHandler</h3>
+```python
+class CreatePostHandler(FormHandler):
+    template_name = 'create_post.html'
+    form_class = CreatePostForm
     
+    def form_valid(self, form):
+        post = Post(title=form.data['title'], text=form.data['text'])
+        self.db.add(post)
+        self.db.commit()
+        self.db.refresh(post)
+        self.post_id = post.id
+        return super(CreatePostHandler, self).form_valid(form)
+        
     def get_success_url(self):
-        return self.reverse_url('home')
+        return self.reverse_url('post', self.post_id)
 ```
