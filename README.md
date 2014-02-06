@@ -4,7 +4,6 @@ Note that implementation might differ a bit in some of the cases.<br/> The featu
 <ul>
   <li>generic handlers</li>
   <li>pagination</li>
-  <li>project-wide context variables</li>
 </ul>
 </p>
 <h2>Installation</h2>
@@ -113,7 +112,15 @@ class PostDetailHandler(DetailHandler):
     template_name = 'post.html'
     model = Post
     #name by which the object will be accessible in template
-    context_object_name = 'post' 
+    context_object_name = 'post'
+    
+    def get_context_data(self, **kwargs):
+        """
+        A place to append any necessary context variables.
+        """
+        context = super(PostDetailHandler, self).get_context_data(**kwargs)
+        context['now'] = datetime.now()
+        return context
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -154,4 +161,70 @@ class Application(tornado.web.Application):
         handlers = [
             url(r'/post/(?P<mega_slug>[-_\w]+)/', PostDetailHandler, name='post_detail'),
         ]
+```
+<h3>ListHandler</h3>
+<p>A page representing a list of objects.</p>
+```python
+class BlogHandler(ListHandler):
+    template_name = 'blog.html'
+    paginate_by = 10
+    context_object_name = 'post_list'
+    model = Post
+    allow_empty = False #raises 404 if no objects found, defaults to True
+    page_kwarg = 'the_page' #defauls to 'page'
+    
+    #An integer specifying the number of “overflow” objects the last page can contain. 
+    #This extends the paginate_by limit on the last page by up to paginate_orphans, 
+    #in order to keep the last page from having a very small number of objects.
+    paginate_orphans = 0 
+    
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            url(r'/blog/', PostDetailHandler, name='blog_index'),
+            url(r'/blog/(?P<the_page>\d+)/', BlogHandler, name='blog_page'),
+        ]
+```
+<h3>Pagination</h3>
+<p>Pagination can be used separately.</p>
+```python
+from torgen.pagination import Paginator, EmptyPage, PageNotAnInteger
+
+class BlogHandler(tornado.web.RequestHandler):
+    @property
+    def db(self):
+        return self.application.db
+        
+    def get(self, page):
+        post_list = self.db.query(Post).all()
+        paginator = Paginator(posts, 15)
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+        self.render('blog.html', posts=posts)
+```
+<p>In the template:</p>
+```html
+{% for post in posts %}
+    {{ post.title }}<br />
+{% end %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if posts.has_previous %}
+            <a href="/blog/{{ posts.previous_page_number }}/">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+        </span>
+
+        {% if posts.has_next %}
+            <a href="/blog/{{ posts.next_page_number }}/">next</a>
+        {% endif %}
+    </span>
+</div>
 ```
