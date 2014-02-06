@@ -56,8 +56,21 @@ class LoginHandler(FormHandler):
 class CreatePostHandler(FormHandler):
     template_name = 'create_post.html'
     form_class = CreatePostForm
+    initial = {'title': 'Default title'} #initial value for the form field
+        
+    def get_initial(self):
+        """
+        Returns the copy of provided initial dictionary.
+        If you need, return the whole new dictionary from here instead of updating it.
+        """
+        dummy_text = self.db.query(DummyTexts).first()
+        self.initial.update({'text': dummy_text})
+        return super(CreatePostHandler, self).get_initial()
     
     def form_valid(self, form):
+        """
+        Called if the form was valid. Redirect user to success_url.
+        """
         post = Post(title=form.data['title'], text=form.data['text'])
         self.db.add(post)
         self.db.commit()
@@ -65,6 +78,19 @@ class CreatePostHandler(FormHandler):
         self.post_id = post.id
         return super(CreatePostHandler, self).form_valid(form)
         
+    def form_invalid(self, form):
+        """
+        Called if the form was invalid.
+        By default it rerenders template with the form holding error messages.
+        Here you can add new context variables or do anythin you'd like, i.e.
+        redirect user somewhere.
+        """
+        new_var = 'brand new variable to the template context'
+        return self.render(self.get_context_data(form=form, new_var=new_var))
+        
     def get_success_url(self):
+        """
+        Return success_url attribute by default.
+        """
         return self.reverse_url('post', self.post_id)
 ```
