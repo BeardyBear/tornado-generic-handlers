@@ -51,7 +51,7 @@ class MultipleObjectMixin(ContextMixin):
             if page == 'last':
                 page_number = paginator.num_pages
             else:
-                raise tornado.web.HTTPError(404, log_message='Page is not 'last', nor can it be converted to an int.')
+                raise tornado.web.HTTPError(404, log_message='Page is not \'last\', nor can it be converted to an int.')
         try:
             page = paginator.page(page_number)
             return (paginator, page, page.object_list, page.has_other_pages())

@@ -24,6 +24,7 @@ class Application(tornado.web.Application):
 from torgen.base import TemplateHandler
 from torgen.list import ListHandler
 from torgen.detail import DetailHandler
+from torgen.edit import FormHandler
 
 class HomeHandler(TemplateHandler):
     template_name = 'home.html'
@@ -163,7 +164,7 @@ class Application(tornado.web.Application):
         ]
 ```
 <h3>ListHandler</h3>
-<p>A page representing a list of objects.</p>
+<p>A page representing a list of objects.<br/>While this handler is executing, self.object_list will contain the list of objects </p>
 ```python
 class BlogHandler(ListHandler):
     template_name = 'blog.html'
@@ -186,7 +187,7 @@ class Application(tornado.web.Application):
         ]
 ```
 <h3>Pagination</h3>
-<p>Pagination can be used separately.</p>
+<p>Pagination can be used separately from ListView in any handler.</p>
 ```python
 from torgen.pagination import Paginator, EmptyPage, PageNotAnInteger
 
@@ -216,7 +217,7 @@ class BlogHandler(tornado.web.RequestHandler):
     <span class="step-links">
         {% if posts.has_previous %}
             <a href="/blog/{{ posts.previous_page_number }}/">previous</a>
-        {% endif %}
+        {% end %}
 
         <span class="current">
             Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
@@ -224,7 +225,7 @@ class BlogHandler(tornado.web.RequestHandler):
 
         {% if posts.has_next %}
             <a href="/blog/{{ posts.next_page_number }}/">next</a>
-        {% endif %}
+        {% end %}
     </span>
 </div>
 ```
