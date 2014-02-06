@@ -1,6 +1,6 @@
-from .base import *
-from .pagination import Paginator
-from .exceptions import ImproperlyConfigured
+from torgen.base import ContextMixin, GenericHandler, TemplateResponseMixin
+from torgen.pagination import Paginator
+from torgen.exceptions import ImproperlyConfigured
 
 class MultipleObjectMixin(ContextMixin):
     """
@@ -25,7 +25,7 @@ class MultipleObjectMixin(ContextMixin):
         if self.queryset is not None:
             queryset = self.queryset.all()
         elif self.model is not None:
-            queryset = self.model.query.all()
+            queryset = self.db.query(self.model).all()
         else:
             raise ImproperlyConfigured(
                 "%(cls)s is missing a QuerySet. Define "

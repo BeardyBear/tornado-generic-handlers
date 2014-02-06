@@ -1,6 +1,6 @@
 <h1>tornado-generic-handlers</h1>
 <p>This package contains Django's generic class based views adapted to be used with Tornado along with SQLAlchemy and WTForms. 
-Note that implementation might differ a bit in some of the cases. The features included:
+Note that implementation might differ a bit in some of the cases.<br/> The features included:
 <ul>
   <li>generic handlers</li>
   <li>pagination</li>
@@ -12,6 +12,8 @@ Note that implementation might differ a bit in some of the cases. The features i
 pip install torgen
 ```
 <h2>Configuration</h2>
+```python
+```
 <h2>Usage</h2>
 ```python
 from torgen.base import TemplateHandler

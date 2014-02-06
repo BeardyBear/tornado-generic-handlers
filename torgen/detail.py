@@ -1,6 +1,6 @@
 from sqlalchemy.orm.exc import NoResultFound 
-from .exceptions import ImproperlyConfigured
-from .base import GenericHandler, TemplateResponseMixin
+from torgen.exceptions import ImproperlyConfigured
+from torgen.base import GenericHandler, TemplateResponseMixin, ContextMixin
 
 class SingleObjectMixin(ContextMixin):
     """
@@ -59,7 +59,7 @@ class SingleObjectMixin(ContextMixin):
         """
         if self.queryset is None:
             if self.model:
-                return self.model.query
+                return self.db.query(self.model)
             else:
                 raise ImproperlyConfigured(
                     "%(cls)s is missing a QuerySet. Define "

@@ -1,5 +1,6 @@
-from .base import *
-from .detail import BaseDetailHandler
+from torgen.base import TemplateResponseMixin, ContextMixin, GenericHandler
+from torgen.detail import BaseDetailHandler
+from torgen.exceptions import ImproperlyConfigured
 
 class FormMixin(ContextMixin):
     """
@@ -138,4 +139,3 @@ class DeleteHandlers(TemplateResponseMixin, BaseDeleteHandler):
     View for deleting an object retrieved with `self.get_object()`,
     with a response rendered by template.
     """
-    template_name_suffix = '_confirm_delete'
