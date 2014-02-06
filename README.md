@@ -182,7 +182,7 @@ class BlogHandler(ListHandler):
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            url(r'/blog/', PostDetailHandler, name='blog_index'),
+            url(r'/blog/', BlogHandler, name='blog_index'),
             url(r'/blog/(?P<the_page>\d+)/', BlogHandler, name='blog_page'),
         ]
 ```
