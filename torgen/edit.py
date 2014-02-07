@@ -114,10 +114,12 @@ class DeletionMixin(object):
         self.object = self.get_object()
         success_url = self.get_success_url()
         self.db.delete(self.object)
+        self.db.commit()
         return self.redirect(success_url)
 
     # Add support for browsers which only accept GET and POST for now.
     def post(self, *args, **kwargs):
+        super(DeletionMixin, self).post(*args, **kwargs)
         return self.delete(*args, **kwargs)
 
     def get_success_url(self):
@@ -126,15 +128,17 @@ class DeletionMixin(object):
         else:
             raise ImproperlyConfigured(
                 "No URL to redirect to. Provide a success_url.")
-                
+
+               
 class BaseDeleteHandler(DeletionMixin, BaseDetailHandler):
     """
     Base view for deleting an object.
 
     Using this base class requires subclassing to provide a response mixin.
     """
+        
     
-class DeleteHandlers(TemplateResponseMixin, BaseDeleteHandler):
+class DeleteHandler(TemplateResponseMixin, BaseDeleteHandler):
     """
     View for deleting an object retrieved with `self.get_object()`,
     with a response rendered by template.
