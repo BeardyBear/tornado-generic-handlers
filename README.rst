@@ -1,9 +1,24 @@
-========================
-tornado-generic-handlers
-========================
+======
+torgen
+======
+
+Django's CBVs adapted to be used with Tornado along with SQLAlchemy and WTForms.
+
+Configuration
+=============
+
+The only requirement is SQLAlchemy's session stored in application's db attribute.
+
+::
+
+   from sqlalchemy.orm import scoped_session, sessionmaker
+
+   class Application(tornado.web.Application):
+       def __init__(self):
+           self.db = scoped_session(sessionmaker(bind=engine))
 
 Basic usage
-=====
+===========
 
 ::
 
@@ -11,6 +26,8 @@ Basic usage
    from torgen.list import ListHandler
    from torgen.detail import DetailHandler
    from torgen.edit import FormHandler
+   from my_alchemy_models import Post
+   from my_wtforms import LoginForm
 
    class HomeHandler(TemplateHandler):
        template_name = 'home.html'
@@ -35,15 +52,36 @@ Basic usage
            self.set_secure_cookie('user', form.data['username'])
            return super(LoginHandler, self).form_valid(form)
 
-You can find more docs here: https://github.com/BeardyBear/tornado-generic-handlers
+Pagination
+==========
+
+Pagination can be used separately from generic handlers.
+
+::
+
+   from torgen.pagination import Paginator, EmptyPage, PageNotAnInteger
+
+   class BlogHandler(tornado.web.RequestHandler):
+       @property
+       def db(self):
+           return self.application.db
+
+       def get(self, page):
+           post_list = self.db.query(Post).all()
+           paginator = Paginator(posts, 15)
+           try:
+               posts = paginator.page(page)
+           except PageNotAnInteger:
+               posts = paginator.page(1)
+           except EmptyPage:
+               posts = paginator.page(paginator.num_pages)
+           self.render('blog.html', posts=posts)
+
+You can find advanced docs here: https://github.com/BeardyBear/tornado-generic-handlers
 
 Installation
 ============
 
-You can to use pip_ to install tornado-generic-handlers::
+Using pip:
 
    $ pip install torgen
-
-Or using last source::
-
-   $ pip install git+git://github.com/BeardyBear/tornado-generic-handlers.git

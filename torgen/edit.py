@@ -68,6 +68,7 @@ class ProcessFormHandler(GenericHandler):
         """
         Handles GET requests and instantiates a blank version of the form.
         """
+        super(ProcessFormHandler, self).get(*args, **kwargs)
         form_class = self.get_form_class()
         form = self.get_form(form_class)
         return self.render(self.get_context_data(form=form))
@@ -77,6 +78,7 @@ class ProcessFormHandler(GenericHandler):
         Handles POST requests, instantiating a form instance with the passed
         POST variables and then checked for validity.
         """
+        super(ProcessFormHandler, self).post(*args, **kwargs)
         form_class = self.get_form_class()
         form = self.get_form(form_class)
         if form.validate():

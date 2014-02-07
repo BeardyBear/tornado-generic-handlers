@@ -11,6 +11,7 @@ Note that implementation might differ a bit in some of the cases.<br/> The featu
 pip install torgen
 ```
 <h2>Configuration</h2>
+<p>The only requirement is SQLAlchemy's session stored in application's db attribute.</p>
 ```python
 #app.py
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -24,7 +25,7 @@ class Application(tornado.web.Application):
 from torgen.base import TemplateHandler
 from torgen.list import ListHandler
 from torgen.detail import DetailHandler
-from torgen.edit import FormHandler
+from torgen.edit import FormHandler, DeleteHandler
 
 class HomeHandler(TemplateHandler):
     template_name = 'home.html'
@@ -48,6 +49,11 @@ class LoginHandler(FormHandler):
     def form_valid(self, form):
         self.set_secure_cookie('user', form.data['username'])
         return super(LoginHandler, self).form_valid(form)
+        
+class DeletePostHandler(DeleteHandler):
+    template_name = 'confirm_delete.html'
+    model = Post
+    success_url = '/blog/'
 ```
 <h2>More on handlers</h2>
 <p>You'd like to override handlers methods to customize their behaviour. </p>
@@ -185,6 +191,14 @@ class Application(tornado.web.Application):
             url(r'/blog/', BlogHandler, name='blog_index'),
             url(r'/blog/(?P<the_page>\d+)/', BlogHandler, name='blog_page'),
         ]
+```
+<h3>DeleteHandler</h3>
+<p>Displays a confirmation page and deletes an existing object. The given object will only be deleted if the request method is POST. If this handler is fetched via GET, it will display a confirmation page that should contain a form that POSTs to the same URL.</p>
+```python
+class DeletePostHandler(DeleteHandler):
+    template_name = 'confirm_delete.html'
+    model = Post
+    success_url = '/blog/'
 ```
 <h3>Pagination</h3>
 <p>Pagination can be used separately from ListView in any handler.</p>
