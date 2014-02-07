@@ -229,3 +229,13 @@ class BlogHandler(tornado.web.RequestHandler):
     </span>
 </div>
 ```
+<h3>Decorator usage</h3>
+<p>In order to use Tornado's built-in decorators, simply override the http method. </p>
+```python
+class HomeHandler(TemplateHandler):
+    template_name = 'home.html'
+    
+    @tornado.web.authenticated
+    def get(self, *args, **kwargs):
+        return super(HomeHandler, self).get(*args, **kwargs)
+```
