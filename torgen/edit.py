@@ -101,6 +101,25 @@ class FormHandler(TemplateResponseMixin, BaseFormHandler):
     """
     A view for displaying a form, and rendering a template response.
     """
+    
+class ProcessEditHandler(GenericHandler):
+    def get(self, *args, **kwargs):
+        super(EditFormHandler, self).get(*args, **kwargs)
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render(context)
+        
+class BaseEditHandler(FormMixin, ProcessEditHandler):
+    """
+    A base view for displaying a form
+    """
+    
+class EditHandler(TemplateResponseMixin, BaseEditHandler):
+    """
+    A view for displaying a form, and rendering a template response.
+    """
 
 class DeletionMixin(object):
     """

@@ -3,6 +3,9 @@ torgen
 ======
 
 Django's CBVs adapted to be used with Tornado along with SQLAlchemy and WTForms.
+It's highly recomended to read the docs here first: https://github.com/BeardyBear/tornado-generic-handlers
+
+0.2: new handler - DeleteHandler
 
 Configuration
 =============
@@ -25,7 +28,7 @@ Basic usage
    from torgen.base import TemplateHandler
    from torgen.list import ListHandler
    from torgen.detail import DetailHandler
-   from torgen.edit import FormHandler
+   from torgen.edit import FormHandler, DeleteHandler
    from my_alchemy_models import Post
    from my_wtforms import LoginForm
 
@@ -51,6 +54,11 @@ Basic usage
        def form_valid(self, form):
            self.set_secure_cookie('user', form.data['username'])
            return super(LoginHandler, self).form_valid(form)
+
+   class DeletePostHandler(DeleteHandler):
+       template_name = 'confirm_delete.html'
+       model = Post
+       success_url = '/blog/'
 
 Pagination
 ==========

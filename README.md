@@ -177,6 +177,7 @@ class BlogHandler(ListHandler):
     paginate_by = 10
     context_object_name = 'post_list'
     model = Post
+    queryset = Post.query.order_by(desc(Post.created))
     allow_empty = False #raises 404 if no objects found, defaults to True
     page_kwarg = 'the_page' #defauls to 'page'
     
@@ -199,6 +200,12 @@ class DeletePostHandler(DeleteHandler):
     template_name = 'confirm_delete.html'
     model = Post
     success_url = '/blog/'
+```
+```html
+<form action="" method="post">
+    <p>Are you sure you want to delete "{{ object }}"?</p>
+    <input type="submit" value="Confirm" />
+</form>
 ```
 <h3>Pagination</h3>
 <p>Pagination can be used separately from ListView in any handler.</p>
@@ -252,4 +259,32 @@ class HomeHandler(TemplateHandler):
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
         return super(HomeHandler, self).get(*args, **kwargs)
+```
+<h3>Extending handlers with custom methods</h3>
+<p>One of the valid approaches would be to create a mixin. <br/></p>
+```python
+class BaseMixin(object):
+    def get_current_user(self):
+        username = self.get_secure_cookie("user")
+        if username:
+            return username
+        else:
+            return None
+            
+    def get_context_data(self, **kwargs):
+        """
+        The variables declared here will be available in any template that uses this mixin. 
+        Note that a 'handler' variable is already available in any template,
+        and represents a current handler's object.
+        """
+        kwargs['logged_in'] = self.get_current_user()
+        return super(BaseMixin, self).get_context_data(**kwargs)
+        
+class HomeHandler(BaseMixin, TemplateHandler):
+    template_name = 'home.html'
+```
+```html
+{% if logged_in %}
+<li><a href="{{handler.reverse_url('create_post')}}">Create post</a></li>
+{% end %}
 ```
